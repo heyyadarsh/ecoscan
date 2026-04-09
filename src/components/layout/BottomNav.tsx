@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Camera, MapPin, Trophy, User } from 'lucide-react';
+import { useUser } from '@/hooks/useUser';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Scan', icon: Camera },
@@ -13,6 +14,9 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const scanCount = Number(user?.scanCount);
+  const showScanBadge = !isNaN(scanCount) && scanCount > 0;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
@@ -37,13 +41,18 @@ export function BottomNav() {
 
                   {isScan ? (
                     <span
-                      className={`flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-200 ${
+                      className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-200 ${
                         isActive
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'text-gray-500'
                       }`}
                     >
                       <Icon size={26} strokeWidth={isActive ? 2.2 : 1.8} />
+                      {showScanBadge && (
+                        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-500 text-black text-[9px] font-black flex items-center justify-center leading-none">
+                          {scanCount > 99 ? '99+' : scanCount}
+                        </span>
+                      )}
                     </span>
                   ) : (
                     <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />

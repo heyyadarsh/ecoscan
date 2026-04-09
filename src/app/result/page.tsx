@@ -49,9 +49,12 @@ export default function ResultPage() {
     }
 
     try {
-      setResult(JSON.parse(raw) as ClassificationResult);
+      const parsed = JSON.parse(raw) as ClassificationResult;
+      console.log('[EcoScan] Result loaded from sessionStorage:', parsed);
+      setResult(parsed);
       setImage(img);
     } catch {
+      console.error('[EcoScan] Failed to parse lastScanResult — redirecting to /');
       router.replace('/');
     }
   }, [router]);

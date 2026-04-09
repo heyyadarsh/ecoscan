@@ -40,13 +40,25 @@ export async function getCurrentLocation(): Promise<Coordinates> {
 export async function getCityName(lat: number, lng: number): Promise<string> {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-      { headers: { 'User-Agent': 'EcoScan-App' } },
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`,
+      {
+        headers: { 'User-Agent': 'EcoScan-App/1.0' },
+        cache: 'no-store',
+      },
     );
     const data = await response.json();
-    return data.address?.city || data.address?.town || data.address?.state || 'India';
+    const addr = data.address || {};
+    return (
+      addr.city ||
+      addr.town ||
+      addr.city_district ||
+      addr.county ||
+      addr.state_district ||
+      addr.state ||
+      'Gwalior'
+    );
   } catch {
-    return 'India';
+    return 'Gwalior';
   }
 }
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getLeaderboard } from '@/lib/points';
 import type { User } from '@/types';
 
-export function useLeaderboard(type: 'weekly' | 'alltime' = 'weekly') {
+export function useLeaderboard(type: 'weekly' | 'alltime' = 'weekly', refreshKey = 0) {
   const [leaders, setLeaders] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +31,7 @@ export function useLeaderboard(type: 'weekly' | 'alltime' = 'weekly') {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [type]);
+  }, [type, refreshKey]);
 
   return { leaders, loading };
 }

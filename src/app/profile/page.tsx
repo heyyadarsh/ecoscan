@@ -20,7 +20,14 @@ import {
   Leaf,
   Award,
   Trophy,
+  LogOut,
 } from 'lucide-react';
+import {
+  signOut,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { useUser } from '@/hooks/useUser';
 import { useScanHistory } from '@/hooks/useScanHistory';
 import { updateUserName, updateUserCity } from '@/lib/points';
@@ -62,6 +69,26 @@ export default function ProfilePage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // ── Safe number helper — prevents NaN from Firestore undefined fields ───────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const safe = (val: any) =>
+    isNaN(Number(val)) || val === undefined || val === null ? 0 : Number(val);
+
+  // ── Auth handlers ──────────────────────────────────────────────────────────
+  async function handleSignOut() {
+    await signOut(auth);
+    router.push('/');
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      console.error('Google sign-in failed:', err);
+    }
+  }
 
   // ── Name save ──────────────────────────────────────────────────────────────
   async function handleSaveName() {
@@ -108,21 +135,21 @@ export default function ProfilePage() {
   // ── Achievements ──────────────────────────────────────────────────────────
   const achievements = [
     { id: 'first_scan', icon: '🌱', title: 'First Step', desc: 'First scan',
-      unlocked: (user?.scanCount ?? 0) >= 1 },
+      unlocked: safe(user?.scanCount) >= 1 },
     { id: 'scan_10', icon: '🔟', title: 'Scan Pro', desc: '10 scans',
-      unlocked: (user?.scanCount ?? 0) >= 10 },
+      unlocked: safe(user?.scanCount) >= 10 },
     { id: 'scan_50', icon: '🏆', title: 'Eco Hero', desc: '50 scans',
-      unlocked: (user?.scanCount ?? 0) >= 50 },
+      unlocked: safe(user?.scanCount) >= 50 },
     { id: 'ewaste', icon: '💻', title: 'E-Warrior', desc: 'Any e-waste scan',
       unlocked: scans.some((s) => s.category?.toLowerCase() === 'ewaste') },
     { id: 'hazardous', icon: '⚗️', title: 'Safety First', desc: 'Hazardous scan',
       unlocked: scans.some((s) => s.category?.toLowerCase() === 'hazardous') },
     { id: 'streak_7', icon: '🔥', title: 'On Fire', desc: '7-day streak',
-      unlocked: (user?.streak ?? 0) >= 7 },
+      unlocked: safe(user?.streak) >= 7 },
     { id: 'points_100', icon: '⚡', title: 'Point Master', desc: '100+ points',
-      unlocked: (user?.totalPoints ?? 0) >= 100 },
+      unlocked: safe(user?.totalPoints) >= 100 },
     { id: 'week_1', icon: '📅', title: 'Week Strong', desc: '7 scans in a week',
-      unlocked: (user?.weeklyPoints ?? 0) >= 70 },
+      unlocked: safe(user?.weeklyPoints) >= 70 },
     { id: 'all_cats', icon: '🌈', title: 'Completionist', desc: 'All 4 categories',
       unlocked: (['dry', 'wet', 'hazardous', 'ewaste'] as WasteCategory[]).every(
         (cat) => scans.some((s) => s.category?.toLowerCase() === cat)
@@ -147,12 +174,53 @@ export default function ProfilePage() {
     );
   }
 
+  // ── Not signed in ──────────────────────────────────────────────────────────
+  const isAnonymous = !auth.currentUser || auth.currentUser.isAnonymous;
+  if (!user && !loading) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center px-6 text-center gap-5">
+        <span className="text-6xl">🌿</span>
+        <h2 className="text-white font-bold text-xl">Sign in to EcoScan</h2>
+        <p className="text-gray-400 text-sm leading-relaxed">
+          Track your points, scan history, and appear on the leaderboard.
+        </p>
+        <button
+          onClick={handleGoogleSignIn}
+          className="flex items-center gap-3 bg-white text-gray-900 font-semibold px-6 py-3 rounded-xl shadow-lg hover:bg-gray-100 transition-colors"
+        >
+          <span className="text-lg">🔍</span>
+          Sign in with Google
+        </button>
+      </div>
+    );
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col flex-1 overflow-y-auto pb-8">
 
       {/* ── Section 1: Profile Header ───────────────────────────────────────── */}
-      <div className="bg-gradient-to-b from-emerald-950/40 to-transparent pb-6 pt-10 px-4 flex flex-col items-center">
+      <div className="bg-gradient-to-b from-emerald-950/40 to-transparent pb-6 pt-10 px-4 flex flex-col items-center relative">
+        {/* Sign Out button */}
+        {!isAnonymous && (
+          <button
+            onClick={handleSignOut}
+            className="absolute top-4 right-4 flex items-center gap-1.5 bg-red-500/10 border border-red-500/30
+              text-red-400 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-red-500/20 transition-colors"
+          >
+            <LogOut size={12} />
+            Sign Out
+          </button>
+        )}
+        {isAnonymous && (
+          <button
+            onClick={handleGoogleSignIn}
+            className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/5 border border-white/20
+              text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors"
+          >
+            Sign In
+          </button>
+        )}
         {/* Avatar */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
@@ -213,13 +281,13 @@ export default function ProfilePage() {
       {/* ── Section 2: Stats Grid ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3 px-4 mt-2">
         {[
-          { icon: <Zap size={18} className="text-emerald-400" />, value: user?.totalPoints ?? 0,
+          { icon: <Zap size={18} className="text-emerald-400" />, value: safe(user?.totalPoints),
             label: 'Total EcoPoints', delay: 0.05 },
-          { icon: <Camera size={18} className="text-blue-400" />, value: user?.scanCount ?? 0,
+          { icon: <Camera size={18} className="text-blue-400" />, value: safe(user?.scanCount),
             label: 'Waste Items Scanned', delay: 0.1 },
-          { icon: <Flame size={18} className="text-orange-400" />, value: user?.weeklyPoints ?? 0,
+          { icon: <Flame size={18} className="text-orange-400" />, value: safe(user?.weeklyPoints),
             label: 'Points This Week', delay: 0.15 },
-          { icon: <Calendar size={18} className="text-green-400" />, value: user?.streak ?? 0,
+          { icon: <Calendar size={18} className="text-green-400" />, value: safe(user?.streak),
             label: 'Day Streak 🔥', delay: 0.2 },
         ].map((stat) => (
           <motion.div

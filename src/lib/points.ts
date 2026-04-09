@@ -10,7 +10,6 @@ import {
   getDocs,
   addDoc,
   increment,
-  where,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { User, ScanRecord, ClassificationResult } from '@/types';
@@ -66,34 +65,52 @@ export async function updateUserCity(userId: string, city: string): Promise<void
 export async function recordScan(userId: string, result: ClassificationResult): Promise<void> {
   const userRef = doc(db, 'users', userId);
   const snap = await getDoc(userRef);
-  const user = snap.data() as User;
 
+  const pts = result.points_earned || 10;
   const today = todayString();
   const yesterday = yesterdayString();
 
-  let newStreak: number;
-  if (user.lastScanDate === yesterday) {
-    newStreak = (user.streak || 0) + 1;
-  } else if (user.lastScanDate === today) {
-    newStreak = user.streak || 1;
+  if (!snap.exists()) {
+    // First scan ever — create the user doc from scratch with safe values
+    await setDoc(userRef, {
+      id: userId,
+      name: 'EcoWarrior',
+      totalPoints: pts,
+      weeklyPoints: pts,
+      scanCount: 1,
+      streak: 1,
+      lastScanDate: today,
+      city: 'India',
+      createdAt: Date.now(),
+    });
   } else {
-    newStreak = 1;
+    // Existing user — compute streak then increment safely
+    const user = snap.data() as User;
+    let newStreak: number;
+    if (user.lastScanDate === yesterday) {
+      newStreak = (user.streak || 0) + 1;
+    } else if (user.lastScanDate === today) {
+      newStreak = user.streak || 1;
+    } else {
+      newStreak = 1;
+    }
+
+    await updateDoc(userRef, {
+      totalPoints: increment(pts),
+      weeklyPoints: increment(pts),
+      scanCount: increment(1),
+      streak: newStreak,
+      lastScanDate: today,
+    });
   }
 
-  await updateDoc(userRef, {
-    totalPoints: increment(result.points_earned),
-    weeklyPoints: increment(result.points_earned),
-    scanCount: increment(1),
-    streak: newStreak,
-    lastScanDate: today,
-  });
-
-  await addDoc(collection(db, 'scans'), {
+  // Always write to scan history subcollection
+  await addDoc(collection(db, 'users', userId, 'scans'), {
     userId,
-    item_name: result.item_name,
-    category: result.category,
-    points_earned: result.points_earned,
-    co2_saved_kg: result.co2_saved_kg,
+    item_name: result.item_name || 'Unknown Item',
+    category: result.category || 'dry',
+    points_earned: pts,
+    co2_saved_kg: result.co2_saved_kg || 0.05,
     timestamp: Date.now(),
   });
 }
@@ -118,14 +135,11 @@ export async function getUserRank(userId: string, type: 'weekly' | 'alltime'): P
 // ─── Scan History ─────────────────────────────────────────────────────────────
 
 export async function getUserScanHistory(userId: string): Promise<ScanRecord[]> {
-  const q = query(
-    collection(db, 'scans'),
-    where('userId', '==', userId),
-    orderBy('timestamp', 'desc'),
-    limit(20),
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ScanRecord);
+  const snap = await getDocs(collection(db, 'users', userId, 'scans'));
+  const records = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ScanRecord);
+  return records
+    .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
+    .slice(0, 20);
 }
 
 // ─── Demo Seed ───────────────────────────────────────────────────────────────

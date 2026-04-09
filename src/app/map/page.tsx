@@ -51,6 +51,7 @@ export default function MapPage() {
       setUserCoords({ lat: coords.lat, lng: coords.lng });
 
       const city = await getCityName(coords.lat, coords.lng);
+      console.log('[EcoScan] Resolved city name:', city, '| coords:', coords.lat, coords.lng);
       setCityName(city);
 
       const nearby = generateNearbyLocations(coords.lat, coords.lng, city);

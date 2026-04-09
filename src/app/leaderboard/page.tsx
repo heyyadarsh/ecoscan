@@ -12,6 +12,13 @@ import type { User } from '@/types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// Safely coerce Firestore values to a display number — prevents NaN showing in UI
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const safeNum = (val: any): number => {
+  const n = Number(val);
+  return isNaN(n) ? 0 : n;
+};
+
 function initial(name: string) {
   return (name?.[0] ?? '?').toUpperCase();
 }
@@ -60,7 +67,7 @@ function PodiumItem({
     2: 'text-gray-300',
     3: 'text-orange-400',
   };
-  const pts = rank === 1 ? user.totalPoints : rank === 2 ? user.totalPoints : user.totalPoints;
+  const pts = safeNum(user.totalPoints);
 
   const initials = (
     <motion.div
@@ -129,7 +136,7 @@ export default function LeaderboardPage() {
   const [userRank, setUserRank] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { leaders, loading } = useLeaderboard(activeTab);
+  const { leaders, loading } = useLeaderboard(activeTab, refreshKey);
   const { user, userId } = useUser();
 
   const fetchRank = useCallback(async () => {
@@ -298,7 +305,7 @@ export default function LeaderboardPage() {
                         <div className="flex items-center gap-1 shrink-0">
                           <Flame size={13} className="text-orange-400" />
                           <span className="text-white font-bold text-sm">
-                            {activeTab === 'weekly' ? leader.weeklyPoints : leader.totalPoints}
+                            {activeTab === 'weekly' ? safeNum(leader.weeklyPoints) : safeNum(leader.totalPoints)}
                           </span>
                         </div>
                       </motion.div>
@@ -321,12 +328,12 @@ export default function LeaderboardPage() {
           Your Rank
         </p>
 
-        {!user || userRank === 0 ? (
+        {!user ? (
           <p className="text-gray-400 text-sm">Keep scanning to rank up! 🌱</p>
         ) : (
           <div className="flex items-center gap-3">
             <span className="text-emerald-400 font-black text-3xl leading-none">
-              #{userRank}
+              {!userRank || isNaN(userRank) ? 'Unranked' : `#${userRank}`}
             </span>
 
             <div
@@ -338,13 +345,13 @@ export default function LeaderboardPage() {
 
             <div className="flex-1 min-w-0">
               <p className="text-white font-semibold text-sm truncate">{user.name}</p>
-              <p className="text-gray-500 text-xs">{user.scanCount} scans</p>
+              <p className="text-gray-500 text-xs">{safeNum(user.scanCount)} scans</p>
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
               <Zap size={13} className="text-emerald-400" />
               <span className="text-emerald-400 font-bold text-sm">
-                {activeTab === 'weekly' ? user.weeklyPoints : user.totalPoints} pts
+                {activeTab === 'weekly' ? safeNum(user.weeklyPoints) : safeNum(user.totalPoints)} pts
               </span>
             </div>
           </div>
