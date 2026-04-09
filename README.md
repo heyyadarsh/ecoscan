@@ -181,7 +181,7 @@ service cloud.firestore {
 
 ## Built By
 
-**Team — ITM University Gwalior, MP**
+**Team — Rackze (ITM University Gwalior, MP** Hackathon)
 
 Adarsh Parashar · Harsh Jain
 
