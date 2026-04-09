@@ -1,36 +1,194 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+<img src="public/icon-192.png" alt="EcoScan" width="72" height="72" />
 
-First, run the development server:
+# EcoScan
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**AI-powered waste segregation for India — scan, learn, act.**
+
+[![Next.js](https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![Firebase](https://img.shields.io/badge/Firebase-orange?style=flat-square&logo=firebase)](https://firebase.google.com)
+[![Gemini AI](https://img.shields.io/badge/Gemini_Vision-blue?style=flat-square&logo=google)](https://ai.google.dev)
+[![PWA](https://img.shields.io/badge/PWA_Ready-green?style=flat-square)](https://web.dev/progressive-web-apps/)
+
+</div>
+
+---
+
+## The Problem
+
+India produces **62 million tonnes of waste every year.** Only **20% is properly segregated** at source — the rest ends up mixed in landfills, making recycling almost impossible.
+
+Most people *want* to segregate, they just don't know *how* — which bin for a medicine strip? Is a broken charger dry waste or e-waste?
+
+**EcoScan answers that question in 3 seconds.**
+
+---
+
+## What It Does
+
+Point your phone at any waste item → EcoScan's AI tells you exactly what it is, which bin it goes in, and how to dispose of it — with Hindi voice instructions for accessibility.
+
+No app store. No install friction. Opens in the browser like a website, works like a native app.
+
+| Step | What happens |
+|------|-------------|
+| 📷 Scan | Take a photo or upload from gallery |
+| 🤖 Classify | Gemini Vision AI identifies the item + category in ~3s |
+| 🗣️ Learn | Disposal steps + Hindi voice guidance auto-play |
+| 📍 Act | Find the nearest disposal center on map |
+| ⚡ Earn | Get EcoPoints, climb the leaderboard |
+
+---
+
+## Features
+
+**Core**
+- Classifies waste into 4 categories: Dry ♻️ · Wet 🌿 · Hazardous ⚠️ · E-Waste 💻
+- Hindi voice instructions (Web Speech API) — works without internet after first load
+- GPS-based disposal map with category filtering
+- Confidence score + recyclability flag on every scan
+
+**Community & Gamification**
+- Weekly + all-time leaderboard with podium
+- EcoPoints system (10–25 pts per scan by category)
+- User feedback loop — rate AI accuracy, corrections stored for future model training
+- Achievements, streak tracking, CO₂ saved estimate on profile
+
+**Trust & Integrity**
+- Duplicate image fingerprinting — same photo scores 0 pts
+- 60-second scan cooldown, 20 scans/day cap
+- Diminishing returns for scanning only one category repeatedly
+- All rules visible in-app on the leaderboard screen
+
+---
+
+## Tech Stack
+
+```
+Frontend       Next.js 14 (App Router) · TypeScript · Tailwind CSS · Framer Motion
+Maps           Leaflet + React-Leaflet · CartoDB dark tiles · Nominatim geocoding
+AI             Google Gemini 2.5 Flash Vision API (serverless API route)
+Auth & DB      Firebase Auth (anonymous + Google) · Firestore real-time
+PWA            Web App Manifest · standalone display · install-to-home-screen
+Voice          Web Speech API · Hindi (hi-IN) + English (en-IN)
+Charts         Recharts (profile waste breakdown pie)
+Deployment     Vercel
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How It Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+Camera / Gallery
+      │
+      ▼
+/api/classify  ──→  Gemini 2.5 Flash Vision
+      │                   │
+      │          Returns JSON:
+      │          { category, disposal_steps,
+      │            hindi_instruction, points,
+      │            fun_fact, confidence }
+      │
+      ▼
+Anti-abuse check
+(duplicate hash · cooldown · daily cap · category spam multiplier)
+      │
+      ├─ blocked? → show warning, skip navigation
+      │
+      ▼
+Result page (sessionStorage)
++ Firebase recordScan (points, streak, scan history)
++ Real-time leaderboard update (onSnapshot)
+      │
+      ▼
+User gives feedback (correct / wrong category)
+→ feedback_stats collection
+→ Future: fine-tune custom model on India-specific waste
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Scoring
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Category | Points | Reason |
+|----------|--------|--------|
+| ♻️ Dry / 🌿 Wet | 10 pts | Most common — baseline |
+| ⚠️ Hazardous | 20 pts | Higher risk, needs special handling |
+| 💻 E-Waste | 25 pts | Least understood, most impactful |
+| ✅ Feedback given | +5 pts | Rewards accuracy improvement |
+| 🔁 Duplicate image | 0 pts | Anti-gaming |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Local Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Prerequisites:** Node.js 18+, Firebase project, Google AI Studio API key
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+git clone https://github.com/YOUR_USERNAME/ecoscan.git
+cd ecoscan
+npm install
+cp .env.example .env.local   # fill in your keys
+npm run dev
+```
+
+**.env.local**
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+GEMINI_API_KEY=
+```
+
+**Firestore Rules** — paste in Firebase Console → Firestore → Rules:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /scans/{scanId} {
+      allow read, list: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    match /feedback/{docId}  { allow read: if request.auth != null; allow create: if true; }
+    match /feedback_stats/{id} { allow read, write: if true; }
+    match /abuse_tracking/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+---
+
+## What's Next
+
+- [ ] Custom ML model trained on feedback corrections (India-specific waste images)
+- [ ] Ward-level leaderboard for Swachh Bharat municipal competitions
+- [ ] Offline AI using TensorFlow.js (works without internet)
+- [ ] Municipal corporation API for real disposal center data
+- [ ] WhatsApp bot interface for feature phones
+
+---
+
+## Built By
+
+**Team — ITM University Gwalior, MP**
+
+Adarsh Parashar · Harsh [Last Name]
+
+Built for Hackathon 2026 · Smart Cities & Sustainability Track
+
+---
+
+<div align="center">
+  <sub>India's waste problem is solvable. It starts with knowing which bin to use.</sub>
+</div>
