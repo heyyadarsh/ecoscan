@@ -119,7 +119,20 @@ export default function ResultPage() {
     );
   }
 
-  const cfg = CATEGORY_CONFIG[result.category];
+  const normalizedCategory = result.category?.toLowerCase?.() as keyof typeof CATEGORY_CONFIG;
+  const cfg = CATEGORY_CONFIG[normalizedCategory] ?? CATEGORY_CONFIG['dry'];
+
+  // Defensive fallbacks for fields the API might omit
+  const disposalSteps: string[] = Array.isArray(result.disposal_steps) && result.disposal_steps.length
+    ? result.disposal_steps
+    : ['Identify the item', 'Separate from other waste', 'Place in the appropriate bin'];
+  const funFact = result.fun_fact || 'Proper waste segregation can reduce landfill waste by up to 70%.';
+  const hindiInstruction = result.hindi_instruction || 'इस वस्तु को उचित रंग के डब्बे में डालें।';
+  const itemName = result.item_name || 'Unknown Item';
+  const subcategory = result.subcategory || cfg.label;
+  const confidence = result.confidence ?? 60;
+  const pointsEarned = result.points_earned ?? cfg.points;
+  const co2Saved = result.co2_saved_kg ?? 0.05;
 
   return (
     <div className="flex flex-col flex-1 relative overflow-y-auto pb-8">
@@ -189,7 +202,7 @@ export default function ResultPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={image}
-              alt={result.item_name}
+              alt={itemName}
               className="w-24 h-24 rounded-full object-cover border-2"
               style={{ borderColor: cfg.color }}
             />
@@ -215,16 +228,16 @@ export default function ResultPage() {
               className="text-xs font-semibold mt-0.5 px-2 py-0.5 rounded-full self-start"
               style={{ backgroundColor: `${cfg.color}20`, color: cfg.color }}
             >
-              {result.confidence}% confident
+              {confidence}% confident
             </span>
           </div>
         </div>
 
         {/* Item name */}
-        <h1 className="text-2xl font-bold text-white text-center">{result.item_name}</h1>
+        <h1 className="text-2xl font-bold text-white text-center">{itemName}</h1>
 
         {/* Subcategory */}
-        <p className="text-gray-500 text-sm">{result.subcategory}</p>
+        <p className="text-gray-500 text-sm">{subcategory}</p>
       </motion.div>
 
       {/* ── Section 4: Stats Row ──────────────────────────────────────────────── */}
@@ -232,14 +245,14 @@ export default function ResultPage() {
         {[
           {
             icon: <Star size={16} className={cfg.textClass} />,
-            value: `+${result.points_earned}`,
+            value: `+${pointsEarned}`,
             valueClass: cfg.textClass,
             label: 'EcoPoints',
             delay: 0.2,
           },
           {
             icon: <Leaf size={16} className="text-emerald-400" />,
-            value: `${result.co2_saved_kg}kg`,
+            value: `${co2Saved}kg`,
             valueClass: 'text-emerald-400',
             label: 'CO₂ Saved',
             delay: 0.3,
@@ -278,7 +291,7 @@ export default function ResultPage() {
         </h2>
 
         <div className="flex flex-col gap-2">
-          {result.disposal_steps.map((step, i) => (
+          {disposalSteps.map((step, i) => (
             <motion.div
               key={i}
               {...fadeUp(0.4 + i * 0.1)}
@@ -305,7 +318,7 @@ export default function ResultPage() {
           <Lightbulb size={16} className="text-amber-400" />
           <span className="text-amber-400 font-semibold text-sm">Did you know?</span>
         </div>
-        <p className="text-gray-400 text-sm italic leading-relaxed">{result.fun_fact}</p>
+        <p className="text-gray-400 text-sm italic leading-relaxed">{funFact}</p>
       </motion.div>
 
       {/* ── Section 7: Hindi Instruction ─────────────────────────────────────── */}
@@ -314,7 +327,7 @@ export default function ResultPage() {
         className="relative z-10 mx-4 mt-4 bg-[#141414] rounded-xl p-4"
       >
         <span className="text-gray-500 text-xs mb-2 block">🇮🇳 Hindi Instructions</span>
-        <p className="text-gray-200 text-base leading-relaxed">{result.hindi_instruction}</p>
+        <p className="text-gray-200 text-base leading-relaxed">{hindiInstruction}</p>
       </motion.div>
 
       {/* ── Section 8: Action Buttons ─────────────────────────────────────────── */}
