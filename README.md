@@ -183,7 +183,7 @@ service cloud.firestore {
 
 **Team — ITM University Gwalior, MP**
 
-Adarsh Parashar · Harsh [Last Name]
+Adarsh Parashar · Harsh Jain
 
 Built for Hackathon 2026 · Smart Cities & Sustainability Track
 
