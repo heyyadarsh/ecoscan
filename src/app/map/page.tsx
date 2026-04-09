@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { ArrowLeft, MapPin, Clock, List, Map } from 'lucide-react';
@@ -24,7 +24,7 @@ const WasteMap = dynamic(() => import('@/components/map/WasteMap'), {
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_CONFIG) as WasteCategory[];
 
-export default function MapPage() {
+function MapPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -245,5 +245,20 @@ export default function MapPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col flex-1 items-center justify-center gap-4"
+        style={{ background: 'var(--bg-deep)' }}>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: '#10B981', borderTopColor: 'transparent' }} />
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Loading map…</p>
+      </div>
+    }>
+      <MapPageInner />
+    </Suspense>
   );
 }
