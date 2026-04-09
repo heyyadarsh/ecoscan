@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { BottomNav } from './BottomNav';
 import SplineBackground from '@/components/SplineBackground';
+import { PwaInstallBanner } from '@/components/PwaInstallBanner';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,6 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           {children}
           <BottomNav />
+          <PwaInstallBanner />
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
   "name": "EcoScan — AI Waste Segregation",
   "short_name": "EcoScan",
   "description": "Scan waste, get instant AI classification and disposal guidance for India",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0A0A",
