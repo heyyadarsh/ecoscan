@@ -11,6 +11,7 @@ import { recordScan, updateUserName, updateUserCity } from '@/lib/points';
 import { checkScanAllowed, getDailyScansRemaining } from '@/lib/antiAbuse';
 import { playScanStart, playScanSuccess, playError } from '@/lib/sounds';
 import { getCurrentLocation } from '@/lib/location';
+import { compressImageDataUrl } from '@/lib/imageCompress';
 // SplineBackground is rendered at AppShell level (root stacking context)
 
 export default function ScanPage() {
@@ -84,15 +85,32 @@ export default function ScanPage() {
     setAbuseWarning(null);
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const base64Image = reader.result as string;
-      // Strip data-URI prefix for abuse-check hashing and API payload
-      const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+      const rawDataUrl = reader.result as string;
+      let scanTimeout: number | undefined;
       try {
+        let base64Image = rawDataUrl;
+        let compressedMime = file.type || 'image/jpeg';
+        try {
+          const c = await compressImageDataUrl(rawDataUrl);
+          base64Image = c.dataUrl;
+          compressedMime = c.mimeType;
+        } catch {
+          /* canvas unavailable — send original (may fail on huge files) */
+        }
+        const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+
+        const controller = new AbortController();
+        scanTimeout = window.setTimeout(() => controller.abort(), 90000);
         const res = await fetch('/api/classify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Image, mimeType: file.type }),
+          body: JSON.stringify({ image: base64Image, mimeType: compressedMime }),
+          signal: controller.signal,
         });
+
+        if (!res.ok) {
+          throw new Error(`Classify failed (${res.status})`);
+        }
         const result = await res.json();
 
         // ── Anti-abuse check (runs once, after we have the real category) ──
@@ -138,7 +156,16 @@ export default function ScanPage() {
         setTimeout(() => router.push('/result'), 800);
       } catch (err) {
         console.error('Scan failed', err);
+        const msg =
+          err instanceof Error && err.name === 'AbortError'
+            ? 'Scan timed out. Try again with better signal or a smaller photo.'
+            : err instanceof Error && err.message.includes('413')
+              ? 'Photo too large. Try again — we shrink images automatically; pick a slightly smaller photo if needed.'
+              : 'Scan failed. Check your internet connection and try again.';
+        setAbuseWarning(msg);
         setIsScanning(false);
+      } finally {
+        if (scanTimeout) window.clearTimeout(scanTimeout);
       }
     };
     reader.readAsDataURL(file);

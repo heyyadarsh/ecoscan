@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/** Vercel Hobby default is 10s; vision calls often need longer */
+export const maxDuration = 60;
+
 const FALLBACK = {
   item_name: 'Unknown Item',
   category: 'dry',
@@ -18,6 +21,12 @@ const PROMPT = `You are a waste classification expert. Analyze the image and ret
 
 export async function POST(request: NextRequest) {
   try {
+    const key = process.env.GEMINI_API_KEY?.trim();
+    if (!key) {
+      console.error('GEMINI_API_KEY is not set');
+      return NextResponse.json(FALLBACK);
+    }
+
     const body = await request.json();
     const { image, mimeType } = body;
 
@@ -25,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
 
     const geminiResponse = await fetch(url, {
       method: 'POST',
@@ -50,13 +59,21 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await geminiResponse.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+
     if (!text) return NextResponse.json(FALLBACK);
-    
-    // Ensure we parse the JSON and return a clean object
-    const result = JSON.parse(text);
-    return NextResponse.json({ ...FALLBACK, ...result });
+
+    if (text.startsWith('```')) {
+      text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    }
+
+    try {
+      const result = JSON.parse(text) as Record<string, unknown>;
+      return NextResponse.json({ ...FALLBACK, ...result });
+    } catch {
+      console.error('GEMINI JSON parse failed, raw:', text.slice(0, 200));
+      return NextResponse.json(FALLBACK);
+    }
 
   } catch (error) {
     console.error("FATAL ROUTE ERROR:", error);
