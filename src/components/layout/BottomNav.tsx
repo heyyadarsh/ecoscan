@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Camera, MapPin, Trophy, User } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
+import { playNavClick } from '@/lib/sounds';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Scan', icon: Camera },
@@ -22,7 +23,7 @@ export function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="max-w-md mx-auto">
         <div
-          className="px-2 pb-safe"
+          className="glass-nav px-2 pb-safe"
           style={{
             background: 'rgba(6,10,6,0.90)',
             backdropFilter: 'blur(24px)',
@@ -39,26 +40,23 @@ export function BottomNav() {
                 <Link
                   key={href}
                   href={href}
-                  className="flex flex-col items-center justify-center py-3 gap-1 relative transition-colors duration-200"
+                  onClick={!isActive ? playNavClick : undefined}
+                  className="flex flex-col items-center justify-center py-3 gap-1 relative transition-all duration-200 group"
                   style={{ color: isActive ? '#34D399' : 'rgba(240,253,244,0.3)' }}
                 >
                   {/* Active indicator dot */}
-                  {isActive && (
-                    <span
-                      className="absolute top-1.5 w-1 h-1 rounded-full"
-                      style={{ backgroundColor: '#10B981' }}
-                    />
-                  )}
+                  {isActive && <span className="nav-active-dot" />}
 
                   {isScan ? (
                     <span
-                      className="relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200"
+                      className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200${isActive ? ' subtle-float' : ''}`}
                       style={
                         isActive
                           ? { background: 'rgba(16,185,129,0.15)', color: '#34D399' }
                           : {}
                       }
                     >
+                      <div className="absolute inset-0 rounded-full bg-emerald-500/10 blur-sm scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <Icon size={26} strokeWidth={isActive ? 2.2 : 1.8} />
                       {showScanBadge && (
                         <span

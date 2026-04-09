@@ -26,35 +26,55 @@ function createCategoryIcon(category: WasteCategory): L.DivIcon {
     className: '',
     html: `
       <div style="
-        width:36px; height:36px; border-radius:50%;
-        background:${cfg.color};
-        border:2px solid white;
-        box-shadow:0 2px 8px rgba(0,0,0,0.4);
-        display:flex; align-items:center; justify-content:center;
-        font-size:16px; line-height:1;
-      ">${cfg.emoji}</div>
+        position:relative;
+        width:40px; height:48px;
+        display:flex; flex-direction:column; align-items:center;
+      ">
+        <div style="
+          width:40px; height:40px; border-radius:50% 50% 50% 0;
+          transform:rotate(-45deg);
+          background:${cfg.color};
+          border:2.5px solid white;
+          box-shadow:0 3px 12px rgba(0,0,0,0.35);
+          display:flex; align-items:center; justify-content:center;
+        ">
+          <span style="transform:rotate(45deg); font-size:18px; line-height:1;">${cfg.emoji}</span>
+        </div>
+        <div style="
+          width:6px; height:6px; border-radius:50%;
+          background:${cfg.color}; margin-top:-2px;
+          box-shadow:0 2px 4px rgba(0,0,0,0.3);
+        "></div>
+      </div>
     `,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
-    popupAnchor: [0, -20],
+    iconSize: [40, 48],
+    iconAnchor: [20, 48],
+    popupAnchor: [0, -50],
   });
 }
 
 const userIcon = L.divIcon({
   className: '',
   html: `
-    <div style="
-      width:40px; height:40px; border-radius:50%;
-      background:#3B82F6;
-      border:3px solid white;
-      box-shadow:0 2px 12px rgba(59,130,246,0.5);
-      display:flex; align-items:center; justify-content:center;
-      color:white; font-size:10px; font-weight:700; letter-spacing:-0.5px;
-    ">You</div>
+    <div style="position:relative; width:44px; height:44px;">
+      <div style="
+        position:absolute; inset:0; border-radius:50%;
+        background:rgba(59,130,246,0.2);
+        animation:ping 1.5s ease-out infinite;
+      "></div>
+      <div style="
+        position:absolute; inset:4px; border-radius:50%;
+        background:#3B82F6;
+        border:3px solid white;
+        box-shadow:0 2px 14px rgba(59,130,246,0.6);
+        display:flex; align-items:center; justify-content:center;
+        color:white; font-size:9px; font-weight:800; letter-spacing:-0.3px;
+      ">YOU</div>
+    </div>
   `,
-  iconSize: [40, 40],
-  iconAnchor: [20, 20],
-  popupAnchor: [0, -24],
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
+  popupAnchor: [0, -26],
 });
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -77,20 +97,23 @@ export default function WasteMap({ locations, userLat, userLng, activeCategory }
   return (
     <MapContainer
       center={[userLat, userLng]}
-      zoom={14}
+      zoom={15}
       style={{ height: '100%', width: '100%' }}
       zoomControl={true}
     >
+      {/* Voyager tiles — crisp land/street detail, light background */}
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+        maxZoom={19}
       />
 
       {/* User location */}
       <Marker position={[userLat, userLng]} icon={userIcon}>
-        <Popup>
-          <div style={{ fontFamily: 'sans-serif', minWidth: 120 }}>
-            <strong>📍 Your Location</strong>
+            <Popup>
+          <div style={{ fontFamily: 'Inter, sans-serif', minWidth: 130, padding: '2px 0' }}>
+            <strong style={{ color: '#1a1a1a', fontSize: 13 }}>📍 Your Location</strong>
+            <p style={{ color: '#555', fontSize: 11, marginTop: 3 }}>GPS position</p>
           </div>
         </Popup>
       </Marker>
@@ -106,26 +129,26 @@ export default function WasteMap({ locations, userLat, userLng, activeCategory }
             position={[loc.lat, loc.lng]}
             icon={createCategoryIcon(primaryCat)}
           >
-            <Popup minWidth={200}>
-              <div style={{ fontFamily: 'sans-serif', fontSize: 13, lineHeight: 1.5 }}>
+            <Popup minWidth={210}>
+              <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, lineHeight: 1.5, padding: '2px 0' }}>
                 {/* Name */}
-                <p style={{ fontWeight: 700, marginBottom: 6, color: '#111' }}>{loc.name}</p>
+                <p style={{ fontWeight: 800, marginBottom: 6, color: '#111', fontSize: 14 }}>{loc.name}</p>
 
                 {/* Category badges */}
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
                   {loc.category.map((cat) => {
                     const cfg = CATEGORY_CONFIG[cat] ?? CATEGORY_CONFIG['dry'];
                     return (
                       <span
                         key={cat}
                         style={{
-                          background: `${cfg.color}22`,
+                          background: `${cfg.color}18`,
                           color: cfg.color,
-                          border: `1px solid ${cfg.color}44`,
-                          borderRadius: 12,
-                          padding: '1px 8px',
+                          border: `1px solid ${cfg.color}55`,
+                          borderRadius: 100,
+                          padding: '2px 9px',
                           fontSize: 11,
-                          fontWeight: 600,
+                          fontWeight: 700,
                         }}
                       >
                         {cfg.emoji} {cfg.label}
@@ -134,16 +157,28 @@ export default function WasteMap({ locations, userLat, userLng, activeCategory }
                   })}
                 </div>
 
+                {/* Distance callout */}
+                <div style={{
+                  background: '#10B98112',
+                  border: '1px solid #10B98133',
+                  borderRadius: 8,
+                  padding: '4px 10px',
+                  marginBottom: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}>
+                  <span style={{ fontSize: 13 }}>📍</span>
+                  <span style={{ color: '#059669', fontWeight: 700, fontSize: 13 }}>
+                    {formatDistance(distKm)} away
+                  </span>
+                </div>
+
                 {/* Address */}
-                <p style={{ color: '#555', marginBottom: 4 }}>📌 {loc.address}</p>
+                <p style={{ color: '#444', marginBottom: 3, fontSize: 12 }}>📌 {loc.address}</p>
 
                 {/* Timing */}
-                <p style={{ color: '#555', marginBottom: 4 }}>🕐 {loc.timing}</p>
-
-                {/* Distance */}
-                <p style={{ color: '#10B981', fontWeight: 600 }}>
-                  📍 {formatDistance(distKm)} away
-                </p>
+                <p style={{ color: '#666', fontSize: 12 }}>🕐 {loc.timing}</p>
               </div>
             </Popup>
           </Marker>

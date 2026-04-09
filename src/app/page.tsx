@@ -9,6 +9,8 @@ import { Camera, Upload, Zap, Leaf, LogOut, X } from 'lucide-react';
 import { useUser } from '@/hooks/useUser';
 import { recordScan, updateUserName, updateUserCity } from '@/lib/points';
 import { checkScanAllowed, getDailyScansRemaining } from '@/lib/antiAbuse';
+import { playScanStart, playScanSuccess, playError } from '@/lib/sounds';
+import { getCurrentLocation } from '@/lib/location';
 // SplineBackground is rendered at AppShell level (root stacking context)
 
 export default function ScanPage() {
@@ -77,6 +79,7 @@ export default function ScanPage() {
   const onInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    playScanStart();
     setIsScanning(true);
     setAbuseWarning(null);
     const reader = new FileReader();
@@ -98,6 +101,7 @@ export default function ScanPage() {
 
           if (!abuseCheck.allowed) {
             // Cooldown or daily limit — block navigation entirely
+            playError();
             setAbuseWarning(abuseCheck.warningMessage);
             setIsScanning(false);
             return;
@@ -121,9 +125,13 @@ export default function ScanPage() {
           console.warn('Image too large for sessionStorage.');
         }
         if (userId) {
-          try { await recordScan(userId, result); }
+          try {
+            const coords = await getCurrentLocation();
+            await recordScan(userId, result, { lat: coords.lat, lng: coords.lng });
+          }
           catch (fbErr) { console.error('recordScan failed (non-blocking):', fbErr); }
         }
+        playScanSuccess();
         setToastPts(result.points_earned || 10);
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2200);
@@ -148,7 +156,7 @@ export default function ScanPage() {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col overflow-x-hidden"
+      className="relative min-h-screen flex flex-col overflow-x-hidden page-enter"
       style={{ background: 'transparent' }}
       onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
       onDragLeave={() => setDragActive(false)}
@@ -239,7 +247,7 @@ export default function ScanPage() {
         </div>
 
         {/* Scan circle + concentric rings */}
-        <div className="relative flex items-center justify-center pointer-events-none">
+        <div className="relative flex items-center justify-center pointer-events-none glow-pulse">
           {/* Rings */}
           {[300, 240, 180, 130].map((size, i) => (
             <div key={size}
@@ -260,7 +268,7 @@ export default function ScanPage() {
             style={{
               background: 'radial-gradient(circle at 30% 30%, rgba(52,211,153,0.2), rgba(16,185,129,0.05))',
               border: '2px solid rgba(16,185,129,0.3)',
-              boxShadow: '0 0 40px rgba(16,185,129,0.15), inset 0 0 20px rgba(16,185,129,0.05)',
+              boxShadow: '0 0 40px rgba(16,185,129,0.2), 0 0 80px rgba(16,185,129,0.08), inset 0 0 30px rgba(16,185,129,0.05)',
             }}
           >
             {isScanning ? (
@@ -294,7 +302,7 @@ export default function ScanPage() {
             whileTap={{ scale: 0.98 }}
             onClick={() => cameraInputRef.current?.click()}
             disabled={isScanning}
-            className="w-full py-4 rounded-2xl font-black text-lg tracking-tight flex items-center justify-center gap-2 disabled:opacity-40 glow-brand"
+            className="w-full py-4 rounded-2xl font-black text-lg tracking-tight flex items-center justify-center gap-2 disabled:opacity-40 glow-brand glass-button-primary"
             style={{ background: 'linear-gradient(135deg,#059669,#10B981)', color: '#060A06' }}
           >
             {isScanning ? (
@@ -327,7 +335,7 @@ export default function ScanPage() {
             { num: '20%', label: 'Segregated' },
             { num: '4', label: 'Categories' },
           ].map(({ num, label }) => (
-            <div key={label} className="glass-card rounded-xl p-3 text-center">
+            <div key={label} className="glass-card glass-shine rounded-xl p-3 text-center">
               <p className="font-black text-base tabular-nums" style={{ color: '#34D399' }}>{num}</p>
               <p className="text-[9px] font-medium mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{label}</p>
             </div>

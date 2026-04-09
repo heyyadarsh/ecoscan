@@ -33,6 +33,8 @@ export interface ScanRecord {
   points_earned: number;
   co2_saved_kg: number;
   timestamp: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface DisposalLocation {

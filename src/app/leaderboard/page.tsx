@@ -79,7 +79,7 @@ function PodiumItem({
 
       {/* Podium block */}
       <div
-        className="glass-card w-20 mt-2 rounded-t-xl flex items-center justify-center text-lg"
+        className="glass-card glass-shine w-20 mt-2 rounded-t-xl flex items-center justify-center text-lg"
         style={{ height: podiumH[rank], borderRadius: '12px 12px 0 0', borderColor: `${borderColors[rank]}33` }}
       >
         {medals[rank]}
@@ -90,7 +90,7 @@ function PodiumItem({
 
 function SkeletonRow() {
   return (
-    <div className="glass-card flex items-center gap-3 rounded-2xl p-3 mb-2">
+    <div className="glass-card glass-shine flex items-center gap-3 rounded-2xl p-3 mb-2">
       <div className="shimmer-load w-6 h-4 rounded" />
       <div className="shimmer-load w-10 h-10 rounded-full" />
       <div className="flex-1 flex flex-col gap-1.5">
@@ -139,7 +139,7 @@ export default function LeaderboardPage() {
   const rest = activeLeaders.slice(3);
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden" style={{ background: 'var(--bg-deep)' }}>
+    <div className="flex flex-col flex-1 overflow-hidden page-enter" style={{ background: 'var(--bg-deep)' }}>
 
       {/* ── Header ────────────────────────────────────────────────────────────── */}
       <div className="relative px-4 pt-6 pb-4"
@@ -169,7 +169,7 @@ export default function LeaderboardPage() {
         className="flex flex-col flex-1 min-h-0"
       >
         <div className="relative flex items-center px-4 pt-2 pb-0">
-          <div className="glass-card flex p-1 gap-1 rounded-xl flex-1">
+          <div className="glass-card glass-shine flex p-1 gap-1 rounded-xl flex-1">
             {(['weekly', 'alltime'] as const).map((tab) => (
               <button
                 key={tab}
@@ -270,7 +270,7 @@ export default function LeaderboardPage() {
                         initial={{ opacity: 0, x: 16 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.25, delay: idx * 0.05 }}
-                        className="glass-card flex items-center gap-3 rounded-2xl p-3 mb-2"
+                        className="glass-card glass-shine flex items-center gap-3 rounded-2xl p-3 mb-2"
                         style={isCurrent ? { borderColor: 'rgba(16,185,129,0.4)', background: 'rgba(16,185,129,0.05)' } : {}}
                       >
                         <span className="font-bold w-6 text-center text-sm"
@@ -316,7 +316,7 @@ export default function LeaderboardPage() {
             { label: 'Streak', value: `${safeNum(user.streak)}🔥`, sub: 'days' },
             { label: 'This Week', value: `${safeNum(user.weeklyPoints)}`, sub: 'pts' },
           ].map(({ label, value, sub }) => (
-            <div key={label} className="glass-card flex-1 rounded-xl px-2 py-2 text-center">
+            <div key={label} className="glass-card glass-shine flex-1 rounded-xl px-2 py-2 text-center">
               <p className="text-[9px] uppercase tracking-widest font-semibold mb-0.5"
                 style={{ color: 'var(--text-muted)' }}>{label}</p>
               <p className="font-black text-sm tabular-nums leading-none" style={{ color: '#34D399' }}>{value}</p>
@@ -330,7 +330,7 @@ export default function LeaderboardPage() {
       <motion.div
         initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="glass-card mx-4 mb-3 p-4 rounded-2xl shrink-0"
+        className="glass-card glass-shine mx-4 mb-3 p-4 rounded-2xl shrink-0"
         style={{ borderColor: 'rgba(16,185,129,0.2)' }}
       >
         <p className="text-xs mb-2 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
@@ -368,7 +368,7 @@ export default function LeaderboardPage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.4 }}
-        className="glass-card mx-4 mb-4 rounded-2xl shrink-0 overflow-hidden"
+        className="glass-card glass-shine mx-4 mb-4 rounded-2xl shrink-0 overflow-hidden"
       >
         <button
           onClick={() => setPointsInfoOpen((o) => !o)}

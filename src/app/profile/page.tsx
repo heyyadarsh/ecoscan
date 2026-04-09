@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Edit2, Check, Zap, Camera, Flame, Calendar, Leaf, Award, Trophy, LogOut, X } from 'lucide-react';
+import { Edit2, Check, Zap, Camera, Flame, Calendar, Leaf, Award, Trophy, LogOut, X, MapPin, FileText } from 'lucide-react';
 import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useUser } from '@/hooks/useUser';
@@ -139,7 +139,7 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="flex flex-col flex-1 overflow-y-auto pb-8" style={{ background: 'var(--bg-deep)' }}>
+    <div className="flex flex-col flex-1 overflow-y-auto pb-8 page-enter" style={{ background: 'var(--bg-deep)' }}>
 
       {/* ── Setup Banner ───────────────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -257,7 +257,7 @@ export default function ProfilePage() {
           { icon: <Calendar size={18} />, color: '#4ADE80', value: safe(user?.streak), label: 'Day Streak 🔥', delay: 0.2 },
         ].map((stat) => (
           <motion.div key={stat.label} {...fadeUp(stat.delay)}
-            className="glass-card rounded-2xl p-4 flex flex-col gap-1">
+            className="glass-card glass-shine rounded-2xl p-4 flex flex-col gap-1">
             <span style={{ color: stat.color }}>{stat.icon}</span>
             <span className="font-black text-2xl tabular-nums leading-tight" style={{ color: 'var(--text-primary)' }}>
               {stat.value}
@@ -268,7 +268,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Waste Breakdown ─────────────────────────────────────────────────────── */}
-      <motion.div {...fadeUp(0.25)} className="glass-card mx-4 mt-4 p-4 rounded-2xl">
+      <motion.div {...fadeUp(0.25)} className="glass-card glass-shine mx-4 mt-4 p-4 rounded-2xl">
         <h3 className="font-semibold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>Your Waste Profile</h3>
         {scansLoading ? (
           <div className="shimmer-load h-40 rounded-xl" />
@@ -299,7 +299,7 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* ── Impact Card ──────────────────────────────────────────────────────────── */}
-      <motion.div {...fadeUp(0.3)} className="glass-card mx-4 mt-4 p-5 rounded-2xl"
+      <motion.div {...fadeUp(0.3)} className="glass-card glass-shine mx-4 mt-4 p-5 rounded-2xl"
         style={{ background: 'rgba(6,25,12,0.75)', borderColor: 'rgba(16,185,129,0.2)' }}>
         <h3 className="font-bold text-sm mb-4" style={{ color: '#34D399' }}>Your Impact 🌍</h3>
         <div className="flex flex-col gap-3">
@@ -317,6 +317,32 @@ export default function ProfilePage() {
         </div>
       </motion.div>
 
+      {/* ── EcoZone & Certificate CTAs ──────────────────────────────────────────── */}
+      <motion.div {...fadeUp(0.33)} className="grid grid-cols-2 gap-3 px-4 mt-4">
+        <button onClick={() => router.push('/ecozone')}
+          className="glass-card glass-shine rounded-2xl p-4 flex flex-col items-center gap-2 text-center transition-all active:scale-[0.97]">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(16,185,129,0.12)' }}>
+            <MapPin size={18} style={{ color: '#10B981' }} />
+          </div>
+          <span className="font-bold text-xs" style={{ color: 'var(--text-primary)' }}>EcoZone</span>
+          <span className="text-[9px] leading-tight" style={{ color: 'var(--text-muted)' }}>
+            Your green territory
+          </span>
+        </button>
+        <button onClick={() => router.push('/certificate')}
+          className="glass-card glass-shine rounded-2xl p-4 flex flex-col items-center gap-2 text-center transition-all active:scale-[0.97]">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(52,211,153,0.12)' }}>
+            <FileText size={18} style={{ color: '#34D399' }} />
+          </div>
+          <span className="font-bold text-xs" style={{ color: 'var(--text-primary)' }}>Certificate</span>
+          <span className="text-[9px] leading-tight" style={{ color: 'var(--text-muted)' }}>
+            Carbon offset card
+          </span>
+        </button>
+      </motion.div>
+
       {/* ── Achievements ─────────────────────────────────────────────────────────── */}
       <motion.div {...fadeUp(0.35)} className="mx-4 mt-4">
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
@@ -327,7 +353,7 @@ export default function ProfilePage() {
             <motion.div key={a.id}
               initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: a.unlocked ? 1 : 0.3 }}
               transition={{ duration: 0.28, delay: 0.04 * idx }}
-              className={`glass-card flex flex-col items-center text-center p-3 rounded-2xl ${!a.unlocked ? 'grayscale' : ''}`}>
+              className={`glass-card glass-shine flex flex-col items-center text-center p-3 rounded-2xl ${!a.unlocked ? 'grayscale' : ''}`}>
               <span className="text-2xl mb-1">{a.icon}</span>
               <span className="text-xs font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{a.title}</span>
               <span className="text-[9px] mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{a.desc}</span>
@@ -363,7 +389,7 @@ export default function ProfilePage() {
               <motion.div key={scan.id ?? idx}
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.22, delay: idx * 0.04 }}
-                className="glass-card flex items-center gap-3 rounded-2xl p-3 mb-2">
+                className="glass-card glass-shine flex items-center gap-3 rounded-2xl p-3 mb-2">
                 <span className="text-2xl shrink-0">{cfg.emoji}</span>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{scan.item_name}</p>

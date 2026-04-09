@@ -63,7 +63,7 @@ export async function updateUserCity(userId: string, city: string): Promise<void
 
 // ─── Scan Recording ──────────────────────────────────────────────────────────
 
-export async function recordScan(userId: string, result: ClassificationResult): Promise<void> {
+export async function recordScan(userId: string, result: ClassificationResult, coords?: { lat: number; lng: number }): Promise<void> {
   const userRef = doc(db, 'users', userId);
   const snap = await getDoc(userRef);
 
@@ -106,14 +106,20 @@ export async function recordScan(userId: string, result: ClassificationResult): 
   }
 
   // Write to top-level scans collection (queried by userId field)
-  await addDoc(collection(db, 'scans'), {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const scanDoc: Record<string, any> = {
     userId,
     item_name: result.item_name || 'Unknown Item',
     category: result.category || 'dry',
     points_earned: pts,
     co2_saved_kg: result.co2_saved_kg || 0.05,
     timestamp: Date.now(),
-  });
+  };
+  if (coords?.lat && coords?.lng) {
+    scanDoc.lat = coords.lat;
+    scanDoc.lng = coords.lng;
+  }
+  await addDoc(collection(db, 'scans'), scanDoc);
 }
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────

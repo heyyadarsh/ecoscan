@@ -58,7 +58,7 @@ function MapPageInner() {
       : locations.filter((loc) => loc.category.includes(activeCategory as WasteCategory));
 
   return (
-    <div className="flex flex-col flex-1" style={{ background: 'var(--bg-deep)' }}>
+    <div className="flex flex-col flex-1 page-enter" style={{ background: 'var(--bg-deep)' }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 pt-6 pb-3">
@@ -87,7 +87,7 @@ function MapPageInner() {
       {!loading && isDefaultLocation && (
         <motion.div
           initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-          className="glass-card mx-4 mb-2 flex items-center gap-2 rounded-xl px-3 py-2"
+          className="glass-card glass-shine mx-4 mb-2 flex items-center gap-2 rounded-xl px-3 py-2"
           style={{ borderColor: 'rgba(59,130,246,0.2)' }}
         >
           <MapPin size={13} className="shrink-0" style={{ color: '#60A5FA' }} />
@@ -133,7 +133,7 @@ function MapPageInner() {
       </div>
 
       {/* ── View Toggle ─────────────────────────────────────────────────────── */}
-      <div className="glass-card flex items-center mx-4 mb-3 rounded-xl p-1 gap-1">
+      <div className="glass-card glass-shine flex items-center mx-4 mb-3 rounded-xl p-1 gap-1">
         {(['map', 'list'] as const).map((mode) => (
           <button
             key={mode}
@@ -202,7 +202,7 @@ function MapPageInner() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: idx * 0.05 }}
-                  className="glass-card rounded-2xl p-4 mb-3"
+                  className="glass-card glass-shine rounded-2xl p-4 mb-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-bold text-sm leading-tight" style={{ color: 'var(--text-primary)' }}>

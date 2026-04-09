@@ -132,7 +132,7 @@ export default function ResultPage() {
   const co2Saved     = result.co2_saved_kg ?? 0.05;
 
   return (
-    <div className="flex flex-col flex-1 relative overflow-y-auto pb-8"
+    <div className="flex flex-col flex-1 relative overflow-y-auto pb-8 page-enter"
       style={{ background: 'var(--bg-deep)' }}>
 
       {/* Category-colored radial blob at top */}
@@ -185,7 +185,7 @@ export default function ResultPage() {
         initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.1 }}>
 
-        <div className="glass-card flex items-center gap-3 px-5 py-3 rounded-2xl"
+        <div className="glass-card glass-shine flex items-center gap-3 px-5 py-3 rounded-2xl"
           style={{ borderColor: `${cfg.color}33` }}>
           <span className="text-3xl">{cfg.emoji}</span>
           <div className="flex flex-col">
@@ -215,7 +215,7 @@ export default function ResultPage() {
           },
         ].map((stat) => (
           <motion.div key={stat.label} {...fadeUp(stat.delay)}
-            className="glass-card rounded-2xl p-3 flex flex-col items-center text-center"
+            className="glass-card glass-shine rounded-2xl p-3 flex flex-col items-center text-center"
             style={{ borderColor: `${stat.color}22` }}>
             <span style={{ color: stat.color }} className="mb-1">{stat.icon}</span>
             <span className="text-lg font-black leading-tight tabular-nums" style={{ color: stat.color }}>{stat.value}</span>
@@ -232,7 +232,7 @@ export default function ResultPage() {
         <div className="flex flex-col gap-2">
           {disposalSteps.map((step, i) => (
             <motion.div key={i} {...fadeUp(0.4 + i * 0.08)}
-              className="glass-card flex items-start gap-3 rounded-2xl p-4"
+              className="glass-card glass-shine flex items-start gap-3 rounded-2xl p-4"
               style={{ borderLeft: `3px solid ${cfg.color}`, borderRadius: '16px' }}>
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 mt-0.5"
                 style={{ background: cfg.color, color: '#060A06' }}>
@@ -245,7 +245,7 @@ export default function ResultPage() {
       </motion.div>
 
       {/* ── Fun fact ─────────────────────────────────────────────────────────────── */}
-      <motion.div {...fadeUp(0.65)} className="relative z-10 glass-card mx-4 mt-4 p-4 rounded-2xl"
+      <motion.div {...fadeUp(0.65)} className="relative z-10 glass-card glass-shine mx-4 mt-4 p-4 rounded-2xl"
         style={{ borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.04)' }}>
         <div className="flex items-center gap-2 mb-2">
           <Lightbulb size={15} style={{ color: '#F59E0B' }} />
@@ -255,7 +255,7 @@ export default function ResultPage() {
       </motion.div>
 
       {/* ── Hindi instruction ────────────────────────────────────────────────────── */}
-      <motion.div {...fadeUp(0.75)} className="relative z-10 glass-card mx-4 mt-4 p-4 rounded-2xl">
+      <motion.div {...fadeUp(0.75)} className="relative z-10 glass-card glass-shine mx-4 mt-4 p-4 rounded-2xl">
         <div className="flex items-center gap-2 mb-2">
           <span>🇮🇳</span>
           <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Hindi Instructions</span>
@@ -264,7 +264,7 @@ export default function ResultPage() {
       </motion.div>
 
       {/* ── Feedback ─────────────────────────────────────────────────────────────── */}
-      <motion.div {...fadeUp(0.82)} className="relative z-10 glass-card mx-4 mt-4 p-4 rounded-2xl">
+      <motion.div {...fadeUp(0.82)} className="relative z-10 glass-card glass-shine mx-4 mt-4 p-4 rounded-2xl">
         {feedbackGiven ? (
           /* ── Confirmation ── */
           <motion.div
@@ -382,7 +382,7 @@ export default function ResultPage() {
       <motion.div {...fadeUp(0.85)} className="relative z-10 mx-4 mt-6 flex flex-col gap-3">
         <motion.button whileTap={{ scale: 0.98 }}
           onClick={() => router.push(`/map?category=${result.category}`)}
-          className="w-full py-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 glow-brand"
+          className="w-full py-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 glow-brand glass-button-primary"
           style={{ background: `linear-gradient(135deg,${cfg.color}cc,${cfg.color})`, color: '#060A06' }}>
           <MapPin size={17} /> Find Disposal Point
         </motion.button>
