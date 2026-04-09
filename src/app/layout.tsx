@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   description:
     'AI-powered waste segregation for India. Scan any waste item and get instant classification, disposal guidance, and eco-points.',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
