@@ -48,16 +48,22 @@ Required JSON shape:
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Step 1: parse request body ─────────────────────────────────────────
+    console.log('[classify] step 1: parsing request body');
     const body = await request.json();
     const { image, mimeType } = body as { image?: string; mimeType?: string };
+    console.log('[classify] step 1 ok — mimeType:', mimeType, '| image length:', image?.length ?? 0);
 
     if (!image || !mimeType) {
+      console.error('[classify] step 1 failed: missing image or mimeType');
       return NextResponse.json(
         { error: 'Missing required fields: image and mimeType' },
         { status: 400 },
       );
     }
 
+    // ── Step 2: call Gemini ────────────────────────────────────────────────
+    console.log('[classify] step 2: calling gemini-1.5-flash');
     const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -67,12 +73,7 @@ export async function POST(request: NextRequest) {
           contents: [
             {
               parts: [
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: image,
-                  },
-                },
+                { inline_data: { mime_type: mimeType, data: image } },
                 { text: PROMPT },
               ],
             },
@@ -85,29 +86,44 @@ export async function POST(request: NextRequest) {
         }),
       },
     );
+    console.log('[classify] step 2 ok — HTTP status:', geminiResponse.status);
 
+    // ── Step 3: check for non-OK HTTP status ───────────────────────────────
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text();
+      console.error(
+        `[classify] step 3 failed: HTTP ${geminiResponse.status} ${geminiResponse.statusText}`,
+        errText,
+      );
       return NextResponse.json(
-        { error: 'Gemini API error', details: errText },
+        { error: 'Gemini API error', status: geminiResponse.status, details: errText },
         { status: 500 },
       );
     }
 
+    // ── Step 4: extract text from response ────────────────────────────────
+    console.log('[classify] step 4: reading gemini response JSON');
     const geminiData = await geminiResponse.json();
     const text: string = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    console.log('[classify] step 4 ok — raw text length:', text.length, '| preview:', text.slice(0, 120));
 
+    // ── Step 5: parse classification JSON ─────────────────────────────────
+    console.log('[classify] step 5: parsing classification JSON');
     let parsed: ClassificationResult;
     try {
       parsed = JSON.parse(text);
+      console.log('[classify] step 5 ok — category:', parsed.category);
     } catch (err) {
-      console.error('classify: JSON.parse failed. Raw text:', text, err);
+      console.error('[classify] step 5 failed: JSON.parse error. Raw text:', text, err);
       parsed = FALLBACK;
     }
 
     return NextResponse.json(parsed);
-  } catch (err) {
-    console.error('classify route error:', err);
-    return NextResponse.json(FALLBACK);
+  } catch (error) {
+    console.error('FATAL ROUTE ERROR:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: String(error) },
+      { status: 500 },
+    );
   }
 }
