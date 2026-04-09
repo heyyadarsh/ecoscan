@@ -21,7 +21,15 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
       <div className="max-w-md mx-auto">
-        <div className="bg-[#111111] border-t border-white/[0.08] px-2 pb-safe">
+        <div
+          className="px-2 pb-safe"
+          style={{
+            background: 'rgba(6,10,6,0.90)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            borderTop: '1px solid rgba(16,185,129,0.1)',
+          }}
+        >
           <div className="grid grid-cols-4">
             {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
               const isActive = pathname === href;
@@ -31,25 +39,32 @@ export function BottomNav() {
                 <Link
                   key={href}
                   href={href}
-                  className={`flex flex-col items-center justify-center py-3 gap-1 relative transition-colors duration-200 ${
-                    isActive ? 'text-emerald-400' : 'text-gray-500'
-                  }`}
+                  className="flex flex-col items-center justify-center py-3 gap-1 relative transition-colors duration-200"
+                  style={{ color: isActive ? '#34D399' : 'rgba(240,253,244,0.3)' }}
                 >
-                  {isActive && !isScan && (
-                    <span className="w-1 h-1 rounded-full bg-emerald-400 absolute top-1.5" />
+                  {/* Active indicator dot */}
+                  {isActive && (
+                    <span
+                      className="absolute top-1.5 w-1 h-1 rounded-full"
+                      style={{ backgroundColor: '#10B981' }}
+                    />
                   )}
 
                   {isScan ? (
                     <span
-                      className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-200 ${
+                      className="relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200"
+                      style={
                         isActive
-                          ? 'bg-emerald-500/20 text-emerald-400'
-                          : 'text-gray-500'
-                      }`}
+                          ? { background: 'rgba(16,185,129,0.15)', color: '#34D399' }
+                          : {}
+                      }
                     >
                       <Icon size={26} strokeWidth={isActive ? 2.2 : 1.8} />
                       {showScanBadge && (
-                        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-emerald-500 text-black text-[9px] font-black flex items-center justify-center leading-none">
+                        <span
+                          className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black flex items-center justify-center leading-none"
+                          style={{ backgroundColor: '#10B981', color: '#060A06' }}
+                        >
                           {scanCount > 99 ? '99+' : scanCount}
                         </span>
                       )}
@@ -58,7 +73,12 @@ export function BottomNav() {
                     <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />
                   )}
 
-                  <span className="text-[10px] font-medium">{label}</span>
+                  <span
+                    className="text-[10px] font-semibold tracking-wide"
+                    style={{ color: isActive ? '#34D399' : 'rgba(240,253,244,0.3)' }}
+                  >
+                    {label}
+                  </span>
                 </Link>
               );
             })}

@@ -30,7 +30,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-[#0A0A0A] text-white min-h-screen">
+      <body className="text-white min-h-screen" style={{ background: 'transparent' }}>
         <AppShell>{children}</AppShell>
       </body>
     </html>

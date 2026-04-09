@@ -10,6 +10,7 @@ import {
   getDocs,
   addDoc,
   increment,
+  where,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { User, ScanRecord, ClassificationResult } from '@/types';
@@ -104,8 +105,8 @@ export async function recordScan(userId: string, result: ClassificationResult): 
     });
   }
 
-  // Always write to scan history subcollection
-  await addDoc(collection(db, 'users', userId, 'scans'), {
+  // Write to top-level scans collection (queried by userId field)
+  await addDoc(collection(db, 'scans'), {
     userId,
     item_name: result.item_name || 'Unknown Item',
     category: result.category || 'dry',
@@ -121,7 +122,7 @@ export async function getLeaderboard(type: 'weekly' | 'alltime'): Promise<User[]
   const field = type === 'weekly' ? 'weeklyPoints' : 'totalPoints';
   const q = query(collection(db, 'users'), orderBy(field, 'desc'), limit(10));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as User);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as User);
 }
 
 export async function getUserRank(userId: string, type: 'weekly' | 'alltime'): Promise<number> {
@@ -135,7 +136,8 @@ export async function getUserRank(userId: string, type: 'weekly' | 'alltime'): P
 // ─── Scan History ─────────────────────────────────────────────────────────────
 
 export async function getUserScanHistory(userId: string): Promise<ScanRecord[]> {
-  const snap = await getDocs(collection(db, 'users', userId, 'scans'));
+  const q = query(collection(db, 'scans'), where('userId', '==', userId));
+  const snap = await getDocs(q);
   const records = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ScanRecord);
   return records
     .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))

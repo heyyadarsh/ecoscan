@@ -11,6 +11,7 @@ const FALLBACK = {
   hindi_instruction: 'इसे सूखे कूड़ेदान में डालें',
   points_earned: 10,
   co2_saved_kg: 0.05,
+  communityHint: null, // populated from feedback_stats in v2
 };
 
 const PROMPT = `You are a waste classification expert. Analyze the image and return ONLY a valid JSON object matching this exact shape: {"item_name":"string","category":"dry|wet|hazardous|ewaste","subcategory":"string","confidence":number,"recyclable":boolean,"disposal_steps":["step1","step2","step3"],"fun_fact":"string","hindi_instruction":"string","points_earned":number,"co2_saved_kg":number}`;
