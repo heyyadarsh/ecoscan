@@ -11,7 +11,6 @@
 [![Gemini AI](https://img.shields.io/badge/Gemini_Vision-blue?style=flat-square&logo=google)](https://ai.google.dev)
 [![PWA](https://img.shields.io/badge/PWA_Ready-green?style=flat-square)](https://web.dev/progressive-web-apps/)
 
-**[🚀 Live Demo → ecoscan-tan.vercel.app](https://ecoscan-tan.vercel.app)**
 
 </div>
 
