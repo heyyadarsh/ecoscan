@@ -36,6 +36,11 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="text-white min-h-screen" style={{ background: 'transparent' }}>
         <AppShell>{children}</AppShell>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js')})}`,
+          }}
+        />
       </body>
     </html>
   );
