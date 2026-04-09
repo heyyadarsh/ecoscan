@@ -4,18 +4,14 @@ import type { ClassificationResult } from '@/types';
 const FALLBACK: ClassificationResult = {
   item_name: 'Unknown Item',
   category: 'dry',
-  subcategory: 'General Waste',
-  confidence: 60,
+  subcategory: 'Dry',
+  confidence: 0,
   recyclable: false,
-  disposal_steps: [
-    'Identify the item type',
-    'Separate from other waste',
-    'Place in the appropriate colored bin',
-  ],
-  co2_saved_kg: 0.05,
-  fun_fact: 'Proper waste segregation can reduce landfill waste by up to 70%.',
-  hindi_instruction: 'इस वस्तु को उचित रंग के डब्बे में डालें।',
+  disposal_steps: ['Dispose in dry bin'],
+  fun_fact: 'Keep trying!',
+  hindi_instruction: 'koodedaan mein daalen',
   points_earned: 10,
+  co2_saved_kg: 0.05,
 };
 
 const PROMPT = `You are a waste classification expert for India's Swachh Bharat Mission.
@@ -65,7 +61,7 @@ export async function POST(request: NextRequest) {
     // ── Step 2: call Gemini ────────────────────────────────────────────────
     console.log('[classify] step 2: calling gemini-1.5-flash');
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
