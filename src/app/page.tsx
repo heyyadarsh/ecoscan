@@ -74,25 +74,6 @@ export default function ScanPage() {
   };
   const handleLogout = async () => { await signOut(auth); };
 
-  // Compress image to max 1024px / 0.82 quality before sending to API.
-  // Mobile cameras produce 3-8MB files — this brings them under 400KB,
-  // staying well within Vercel's 4.5MB body limit and speeding up the upload.
-  function compressImage(dataUrl: string, maxPx = 1024, quality = 0.82): Promise<string> {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = () => resolve(dataUrl); // fall back to original if compression fails
-      img.src = dataUrl;
-    });
-  }
-
   const onInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -100,16 +81,14 @@ export default function ScanPage() {
     setAbuseWarning(null);
     const reader = new FileReader();
     reader.onloadend = async () => {
-      const rawBase64 = reader.result as string;
-      // Compress before sending — keeps payload small on mobile
-      const base64Image = await compressImage(rawBase64);
+      const base64Image = reader.result as string;
       // Strip data-URI prefix for abuse-check hashing and API payload
       const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
       try {
         const res = await fetch('/api/classify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64Image, mimeType: 'image/jpeg' }),
+          body: JSON.stringify({ image: base64Image, mimeType: file.type }),
         });
         const result = await res.json();
 
