@@ -74,7 +74,7 @@ Auth & DB      Firebase Auth (anonymous + Google) · Firestore real-time
 PWA            Web App Manifest · standalone display · install-to-home-screen
 Voice          Web Speech API · Hindi (hi-IN) + English (en-IN)
 Charts         Recharts (profile waste breakdown pie)
-Deployment     Vercel
+Demo           Local machine · same Wi‑Fi (see below) — no cloud host required for judges
 ```
 
 ---
@@ -128,14 +128,77 @@ User gives feedback (correct / wrong category)
 **Prerequisites:** Node.js 18+, Firebase project, Google AI Studio API key
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ecoscan.git
+git clone https://github.com/heyyadarsh/ecoscan.git
 cd ecoscan
 npm install
 cp .env.example .env.local   # fill in your keys
 npm run dev
 ```
 
-**.env.local**
+Open **http://localhost:3000** in your browser.
+
+---
+
+## Demo for judges (phone on same Wi‑Fi, no Vercel)
+
+Use this when you want judges to open the app on their **phones** while your laptop runs the app.
+
+### 1. On your laptop
+
+```bash
+npm run dev:lan
+```
+
+This binds the dev server to all interfaces (`0.0.0.0`) on port **3000**.
+
+### 2. Find your laptop’s LAN IP
+
+| OS | How |
+|----|-----|
+| **macOS** | System Settings → Network → Wi‑Fi → Details → IP, or run: `ipconfig getifaddr en0` |
+| **Windows** | `ipconfig` → look for **IPv4** under Wi‑Fi (e.g. `192.168.1.42`) |
+| **Linux** | `hostname -I` or `ip addr` |
+
+### 3. Optional — fix hot-reload when opening from the phone
+
+If the page loads but the dev console shows WebSocket / HMR errors, add to **`.env.local`** (use **your** IP and port):
+
+```env
+NEXT_DEV_LAN_ORIGIN=http://192.168.x.x:3000
+```
+
+Restart `npm run dev:lan`.
+
+### 4. On the judge’s phone (same Wi‑Fi as laptop)
+
+Open in the browser:
+
+```text
+http://YOUR_LAN_IP:3000
+```
+
+Example: `http://192.168.1.42:3000`
+
+### 5. Firebase (Google sign-in from the phone)
+
+1. [Firebase Console](https://console.firebase.google.com) → your project → **Authentication** → **Settings** → **Authorized domains**
+2. Add your **IP as a domain** if listed (e.g. `192.168.1.42`), or use **Anonymous** auth for a quick demo if OAuth blocks LAN URLs.
+
+**Note:** `http://` on a LAN IP is **not** a “secure context” in Chrome, so **PWA install / service worker** may not work from the phone URL. **Scanning, AI, map, Firebase, and leaderboard still work** in the browser. Full PWA install needs `https://` (e.g. a future deploy) or testing on **localhost** on the device.
+
+### 6. Production-style test on your machine only
+
+```bash
+npm run build
+npm run start
+```
+
+By default `next start` listens on all interfaces; use `http://YOUR_LAN_IP:3000` the same way (set `PORT` if you change the port).
+
+---
+
+**.env.local** (same as `.env.example`)
+
 ```env
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=

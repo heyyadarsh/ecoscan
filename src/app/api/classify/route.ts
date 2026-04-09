@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-/** Vercel Hobby default is 10s; vision calls often need longer */
+/** Max serverless duration where supported (vision calls can be slow) */
 export const maxDuration = 60;
 
 const FALLBACK = {

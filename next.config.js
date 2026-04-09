@@ -2,8 +2,10 @@
 const nextConfig = {
   images: { unoptimized: true },
 
-  // Allow HMR WebSocket connections from devices on the local network
-  allowedDevOrigins: ['192.168.29.95'],
+  // HMR from phone on same Wi‑Fi: set in .env.local → NEXT_DEV_LAN_ORIGIN=http://192.168.x.x:3000
+  ...(process.env.NEXT_DEV_LAN_ORIGIN
+    ? { allowedDevOrigins: [process.env.NEXT_DEV_LAN_ORIGIN.replace(/\/$/, '')] }
+    : {}),
 
   async headers() {
     return [
