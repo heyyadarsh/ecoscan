@@ -37,19 +37,14 @@ RESPONSE RULES:
 - points_earned: 10 for dry/wet, 20 for hazardous, 25 for ewaste
 - If the image is unclear or not waste: classify as the closest matching category, do not return errors
 
-Return ONLY valid JSON. Zero extra text. Zero markdown. Zero explanation:
-{
-  "item_name": "string",
-  "category": "dry|wet|hazardous|ewaste",
-  "subcategory": "string",
-  "confidence": number,
-  "recyclable": boolean,
-  "disposal_steps": ["step1","step2","step3"],
-  "co2_saved_kg": number,
-  "fun_fact": "string",
-  "hindi_instruction": "string",
-  "points_earned": number
-}`;
+CRITICAL OUTPUT FORMAT:
+- Output a raw JSON object and NOTHING ELSE
+- Do NOT use markdown, backticks, code fences, or any formatting
+- Do NOT write any text before or after the JSON
+- The very first character of your response must be { and the very last must be }
+
+Required JSON shape:
+{"item_name":"string","category":"dry|wet|hazardous|ewaste","subcategory":"string","confidence":number,"recyclable":boolean,"disposal_steps":["step1","step2","step3"],"co2_saved_kg":number,"fun_fact":"string","hindi_instruction":"string","points_earned":number}`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -85,6 +80,7 @@ export async function POST(request: NextRequest) {
           generationConfig: {
             temperature: 0.1,
             maxOutputTokens: 600,
+            responseMimeType: 'application/json',
           },
         }),
       },
@@ -102,20 +98,11 @@ export async function POST(request: NextRequest) {
     const text: string = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 
     let parsed: ClassificationResult;
-
     try {
       parsed = JSON.parse(text);
-    } catch {
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) {
-        try {
-          parsed = JSON.parse(match[0]);
-        } catch {
-          parsed = FALLBACK;
-        }
-      } else {
-        parsed = FALLBACK;
-      }
+    } catch (err) {
+      console.error('classify: JSON.parse failed. Raw text:', text, err);
+      parsed = FALLBACK;
     }
 
     return NextResponse.json(parsed);
