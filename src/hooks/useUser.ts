@@ -15,6 +15,14 @@ export function useUser() {
   const snapshotUnsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    // Phones on slow Wi‑Fi / HTTP LAN can stall on Firebase; never block UI forever
+    const INIT_MS = 12000;
+    const bailTimer = window.setTimeout(() => {
+      console.warn('[useUser] Auth init slow — unlocking UI (Firebase may still connect)');
+      setLoading(false);
+    }, INIT_MS);
+    const cancelBail = () => window.clearTimeout(bailTimer);
+
     const authUnsub = onAuthStateChanged(auth, async (firebaseUser) => {
       snapshotUnsubRef.current?.();
       snapshotUnsubRef.current = null;
@@ -25,6 +33,7 @@ export function useUser() {
           // onAuthStateChanged fires again with the anonymous user
         } catch (err) {
           console.error('[useUser] Anonymous sign-in failed:', err);
+          cancelBail();
           setLoading(false);
         }
         return;
@@ -45,6 +54,7 @@ export function useUser() {
         setUserId(uid);
         setIsAnonymous(anon);
         setUser(userData);
+        cancelBail();
         setLoading(false);
 
         snapshotUnsubRef.current = onSnapshot(doc(db, 'users', uid), (snap) => {
@@ -81,11 +91,13 @@ export function useUser() {
         setUserId(uid);
         setIsAnonymous(anon);
         setUser(fallback);
+        cancelBail();
         setLoading(false);
       }
     });
 
     return () => {
+      cancelBail();
       authUnsub();
       snapshotUnsubRef.current?.();
     };

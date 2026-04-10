@@ -76,10 +76,6 @@ export function PwaInstallBanner() {
     return () => clearTimeout(id);
   }, [deferredPrompt, dismissed, swControlled]);
 
-  useEffect(() => {
-    if (deferredPrompt) setShowManualHint(false);
-  }, [deferredPrompt]);
-
   async function handleInstall() {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();

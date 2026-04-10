@@ -2,8 +2,6 @@ import type { ClassificationResult } from '@/types';
 
 export type VoiceLang = 'en-IN' | 'hi-IN';
 
-let currentUtterance: SpeechSynthesisUtterance | null = null;
-
 export function speak(text: string, lang: VoiceLang = 'hi-IN'): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
@@ -12,14 +10,12 @@ export function speak(text: string, lang: VoiceLang = 'hi-IN'): void {
   utterance.rate = lang === 'hi-IN' ? 0.85 : 0.9;
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
-  currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
 }
 
 export function stopSpeaking(): void {
   if (typeof window === 'undefined') return;
   window.speechSynthesis.cancel();
-  currentUtterance = null;
 }
 
 export function isSpeaking(): boolean {

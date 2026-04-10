@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Flame, Zap, Users, RotateCcw, ShieldAlert, ChevronDown } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { useUser } from '@/hooks/useUser';
 import { getUserRank, seedLeaderboardForDemo } from '@/lib/points';
@@ -115,12 +115,21 @@ export default function LeaderboardPage() {
   const [scansRemaining, setScansRemaining] = useState<number>(20);
   const [pointsInfoOpen, setPointsInfoOpen] = useState(false);
 
-  const fetchRank = useCallback(async () => {
+  useEffect(() => {
     if (!userId) return;
-    try { setUserRank(await getUserRank(userId, activeTab)); } catch { /* silent */ }
-  }, [userId, activeTab]);
-
-  useEffect(() => { fetchRank(); }, [fetchRank, refreshKey]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const rank = await getUserRank(userId, activeTab);
+        if (!cancelled) setUserRank(rank);
+      } catch {
+        /* silent */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, activeTab, refreshKey]);
 
   useEffect(() => {
     if (userId) getDailyScansRemaining(userId).then(setScansRemaining);

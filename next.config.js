@@ -1,11 +1,23 @@
 /** @type {import('next').NextConfig} */
+// Next.js compares Origin *hostnames* to this list (not full URLs). A value like
+// http://192.168.x.x:3000 would never match and all /_next/* requests from the phone get 403.
+function lanDevAllowedHosts() {
+  const raw = process.env.NEXT_DEV_LAN_ORIGIN?.trim().replace(/\/$/, '');
+  if (!raw) return [];
+  try {
+    const href = raw.includes('://') ? raw : `http://${raw}`;
+    const { hostname } = new URL(href);
+    return hostname ? [hostname] : [];
+  } catch {
+    return [raw];
+  }
+}
+
 const nextConfig = {
   images: { unoptimized: true },
 
-  // HMR from phone on same Wi‑Fi: set in .env.local → NEXT_DEV_LAN_ORIGIN=http://192.168.x.x:3000
-  ...(process.env.NEXT_DEV_LAN_ORIGIN
-    ? { allowedDevOrigins: [process.env.NEXT_DEV_LAN_ORIGIN.replace(/\/$/, '')] }
-    : {}),
+  // Phone on LAN: set NEXT_DEV_LAN_ORIGIN in .env.local (full URL or host:port), restart dev
+  ...(lanDevAllowedHosts().length ? { allowedDevOrigins: lanDevAllowedHosts() } : {}),
 
   async headers() {
     return [
